@@ -308,11 +308,15 @@ if (LINUX)
         endif()
 	endif()
 
-    # Read Joy-Con IMU directly from hid-nintendo (Nintendo Switch / L4T).
+    # Read IMU directly via libiio (Nintendo Switch / L4T).
     # joycond's virtual Pro Controller doesn't forward sensor data, so SDL
-    # has no path to the IMU on this platform.
-    option(VANILLA_NX_IMU "Read Joy-Con IMU directly via hid-nintendo evdev" OFF)
+    # has no path to the IMU on this platform. libiio handles the IIO
+    # interface correctly, avoiding torn reads and power management issues.
+    option(VANILLA_NX_IMU "Read IMU via libiio (Nintendo Switch / L4T)" OFF)
     if (VANILLA_NX_IMU)
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(LIBIIO REQUIRED IMPORTED_TARGET libiio)
+
         list(APPEND VANILLA_GUI_SRC
             platform_nx_imu.c
         )
@@ -410,6 +414,7 @@ endif()
 
 if (VANILLA_NX_IMU)
     target_compile_definitions(vanillagui PRIVATE VANILLA_NX_IMU)
+    target_link_libraries(vanillagui PRIVATE PkgConfig::LIBIIO)
 endif()
 
 OPTION(VANILLA_GUI_ENABLE_WINDOWED "Enable windowed mode in Vanilla GUI" ON)
