@@ -1,6 +1,7 @@
 #include "ui.h"
 
 #include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -288,20 +289,19 @@ void vui_select_direction(vui_context_t *ctx, vui_direction_t dir)
             }
 
             vui_direction_t btn_dir;
-            int btn_dist;
 
             int diffx_abs = abs(diffx);
             int diffy_abs = abs(diffy);
 
+            int btn_dist = sqrt(((int64_t)diffx_abs * diffx_abs) + ((int64_t)diffy_abs * diffy_abs));
+
             if (diffx_abs > diffy_abs) {
-                btn_dist = diffx_abs;
                 if (diffx > 0) {
                     btn_dir = VUI_DIR_RIGHT;
                 } else {
                     btn_dir = VUI_DIR_LEFT;
                 }
             } else {
-                btn_dist = diffy_abs;
                 if (diffy > 0) {
                     btn_dir = VUI_DIR_DOWN;
                 } else {

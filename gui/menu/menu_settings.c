@@ -103,6 +103,14 @@ static void toggle_fullscreen(vui_context_t *vui, int button, void *v)
     vui_button_update_checked(vui, button, vpi_config.fullscreen);
 }
 
+static void toggle_cursor_in_fullscreen(vui_context_t *vui, int button, void *v)
+{
+    vpi_config.cursor_in_fullscreen = !vpi_config.cursor_in_fullscreen;
+    vpi_config_save();
+    vui_set_fullscreen(vui, vpi_config.fullscreen);
+    vui_button_update_checked(vui, button, vpi_config.cursor_in_fullscreen);
+}
+
 static void toggle_hwdec(vui_context_t *vui, int button, void *v)
 {
     vpi_config.force_software_decode = !vpi_config.force_software_decode;
@@ -149,6 +157,11 @@ void vpi_menu_settings(vui_context_t *vui, void *v)
     SETTINGS_NAMES[sc] = VPI_LANG_FULLSCREEN;
 	SETTINGS_ACTION[sc] = toggle_fullscreen;
     sc++;
+
+    int SHOW_CURSOR_IN_FS_BTN = sc;
+    SETTINGS_NAMES[sc] = VPI_LANG_CURSOR_IN_FS;
+	SETTINGS_ACTION[sc] = toggle_cursor_in_fullscreen;
+    sc++;
 #else
     SETTINGS_NAMES[sc] = VPI_LANG_QUIT;
     SETTINGS_ACTION[sc] = thunk_to_quit;
@@ -157,9 +170,9 @@ void vpi_menu_settings(vui_context_t *vui, void *v)
 
     // Polkit option (if on a platform that supports polkit)
 #ifdef VANILLA_POLKIT_AVAILABLE
-	int pw_skip_str;
-	vui_button_callback_t pw_skip_action;
-	if (access(POLKIT_ACTION_DST, F_OK) == 0) {
+    int PW_SKIP_SETTING = sc;
+    const int PW_SKIP_ENABLED = access(POLKIT_ACTION_DST, F_OK) == 0;
+	if (PW_SKIP_ENABLED) {
         SETTINGS_NAMES[sc] = VPI_LANG_DISABLE_PASSWORD_SKIP;
 		SETTINGS_ACTION[sc] = transition_to_uninstall_polkit_rule;
     } else {
@@ -180,27 +193,40 @@ void vpi_menu_settings(vui_context_t *vui, void *v)
     sc++;
 #endif
 
-	int btnw = scrw*3/4;
-	int btnx = scrw/2 - btnw/2;
-	int btny = scrh/10;
+    // Back button
+    vpi_menu_create_back_button(vui, fglayer, return_to_main, (void *) (intptr_t) fglayer);
+
+    const int COLS = 2;
+
+    int btnfw = scrw;
+	int btnw = btnfw / 2;
+	int btnx = scrw/2 - btnfw/2;
+	int btny = BTN_SZ;
 	for (int index = 0; index < sc; index++) {
-        buttons[index] = vui_button_create(vui, btnx, btny, btnw, BTN_SZ, lang(SETTINGS_NAMES[index]), 0, VUI_BUTTON_STYLE_BUTTON, fglayer, SETTINGS_ACTION[index], (void *) (intptr_t) fglayer);
-        btny += BTN_SZ;
+        int row = index / COLS;
+        int col = index % COLS;
+        buttons[index] = vui_button_create(vui, btnx + btnw * col, btny + BTN_SZ * row, btnw, BTN_SZ, lang(SETTINGS_NAMES[index]), 0, VUI_BUTTON_STYLE_BUTTON, fglayer, SETTINGS_ACTION[index], (void *) (intptr_t) fglayer);
 	}
+
+#ifdef VANILLA_POLKIT_AVAILABLE
+    // Make root password skip button checkable
+    vui_button_update_checkable(vui, buttons[PW_SKIP_SETTING], 1);
+    vui_button_update_checked(vui, buttons[PW_SKIP_SETTING], PW_SKIP_ENABLED);
+#endif // VANILLA_POLKIT_AVAILABLE
 
 #ifdef VANILLA_GUI_ENABLE_WINDOWED
     // Make full screen button checkable
     vui_button_update_checkable(vui, buttons[FS_SETTING], 1);
     vui_button_update_checked(vui, buttons[FS_SETTING], vpi_config.fullscreen);
-#endif
+
+    vui_button_update_checkable(vui, buttons[SHOW_CURSOR_IN_FS_BTN], 1);
+    vui_button_update_checked(vui, buttons[SHOW_CURSOR_IN_FS_BTN], vpi_config.cursor_in_fullscreen);
+#endif // VANILLA_GUI_ENABLE_WINDOWED
 
 #ifdef VANILLA_HAS_HWDEC
     vui_button_update_checkable(vui, buttons[HWDEC_SETTING], 1);
     vui_button_update_checked(vui, buttons[HWDEC_SETTING], !vpi_config.force_software_decode);
-#endif
-
-    // Back button
-    vpi_menu_create_back_button(vui, fglayer, return_to_main, (void *) (intptr_t) fglayer);
+#endif // VANILLA_HAS_HWDEC
 
     vui_transition_fade_layer_in(vui, fglayer, 0, 0);
 }

@@ -59,6 +59,7 @@ typedef enum {
     VPI_LANG_RESET,
 	VPI_LANG_FULLSCREEN,
     VPI_LANG_HWDEC,
+    VPI_LANG_CURSOR_IN_FS,
     __VPI_LANG_T_COUNT
 } vpi_lang_t;
 
