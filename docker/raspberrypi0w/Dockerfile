@@ -38,4 +38,13 @@ RUN git clone --depth 1 --branch 2025.11-rc2 https://github.com/buildroot/buildr
 
 ENV FORCE_UNSAFE_CONFIGURE=1
 
+# Build everything except for Vanilla
+COPY buildroot /vanilla/buildroot
+RUN make -C /buildroot O=/build BR2_EXTERNAL=/vanilla/buildroot vanilla_raspberrypi0w_defconfig && \
+    /buildroot/utils/config --file /build/.config -d BR2_PACKAGE_VANILLA && \
+    make -C /buildroot O=/build && \
+    /buildroot/utils/config --file /build/.config -e BR2_PACKAGE_VANILLA && \
+    /buildroot/utils/config --file /build/.config -e BR2_PACKAGE_VANILLA_USE_LOCAL && \
+    /buildroot/utils/config --file /build/.config --set-str BR2_PACKAGE_VANILLA_LOCAL_PATH /vanilla
+
 ENTRYPOINT [ "/vanilla/docker/raspberrypi0w/build.sh" ]

@@ -15,6 +15,6 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VER/cmake-$C
     && chmod +x cmake-$CMAKE_VER-linux-$(uname -m).sh \
     && ./cmake-$CMAKE_VER-linux-$(uname -m).sh --prefix=/usr --skip-license
 
-COPY "mingw-w64-x86_64.cmake" "/"
+COPY "docker/windows/mingw-w64-x86_64.cmake" "/"
 
 ENTRYPOINT [ "/vanilla/docker/windows/build.sh" ]

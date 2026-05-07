@@ -51,7 +51,8 @@ jobs:
     - name: Build Docker image
       uses: docker/build-push-action@v6
       with:
-        context: docker/${{ matrix.platform.os }}
+        context: .
+        file: docker/${{ matrix.platform.os }}/Dockerfile
         build-args: |
             ARCH=${{ matrix.platform.arch }}
         tags: vanilla-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
@@ -64,7 +65,6 @@ jobs:
         docker run \
             -v "${{ github.workspace }}:/vanilla" \
             -v "${{ github.workspace }}/build:/install" \
-            -e ANDROID_SIGNING_KEY=${{ secrets.ANDROID_SIGNING_KEY }} \
             vanilla-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
 
     - name: Archive (Linux)
@@ -81,7 +81,17 @@ jobs:
     - name: Archive (Android)
       if: ${{ matrix.platform.os == 'android' }}
       run: |
-        cp build/app-release.apk ${{ matrix.platform.artifact }}
+        if [ -n "${{ secrets.ANDROID_SIGNING_KEY }}" ]; then
+            docker run \
+                -v "${{ github.workspace }}:/vanilla" \
+                -v "${{ github.workspace }}/build:/install" \
+                --entrypoint apksigner \
+                vanilla-${{ matrix.platform.os }}-${{ matrix.platform.arch }} \
+                sign --ks /vanilla/docker/android/vanilla.jks --out /install/app-release-signed.apk --ks-pass pass:${{ secrets.ANDROID_SIGNING_KEY }} /install/app-release.apk
+            cp build/app-release-signed.apk ${{ matrix.platform.artifact }}
+        else
+            cp build/app-release.apk ${{ matrix.platform.artifact }}
+        fi
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v4

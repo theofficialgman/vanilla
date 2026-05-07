@@ -2,13 +2,7 @@
 
 set -e
 
-# Patch Buildroot to build an older version of X11 because the Tegra BSP isn't compatible with the newer one
-cp /vanilla/buildroot/package/x11r7/* /buildroot/package/x11r7/xserver_xorg-server/
-
 # Main build
-make -C /buildroot O=/build BR2_EXTERNAL=/vanilla/buildroot vanilla_nx_defconfig
-/buildroot/utils/config --file /build/.config -e BR2_PACKAGE_VANILLA_USE_LOCAL
-/buildroot/utils/config --file /build/.config --set-str BR2_PACKAGE_VANILLA_LOCAL_PATH /vanilla
 make -C /buildroot O=/build
 
 # Copy initramfs
