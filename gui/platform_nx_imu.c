@@ -141,7 +141,6 @@ static int read_sensor(sensor_t *sensor, float out[3])
         // Get pointer to channel data in buffer
         void *start = iio_buffer_first(sensor->buf, sensor->ch[i]);
         void *end = iio_buffer_end(sensor->buf);
-        ptrdiff_t step = iio_buffer_step(sensor->buf);
 
         if (!start || start >= end) {
             return -1;
@@ -161,12 +160,11 @@ static void publish(const float a[3], const float g[3])
 {
     // Transform from Switch chassis coords to Wii U GamePad coords.
     // Switch upright (screen facing user) should map to GamePad upright.
-    // This requires swapping Y and Z axes with both negated.
-    float ax = a[0];
+    float ax = -a[0];   // Negate X for correct roll
     float ay = -a[2];   // GamePad Y = -Switch Z
     float az = -a[1];   // GamePad Z = -Switch Y
 
-    float gx = g[0];
+    float gx = -g[0];   // Negate X for correct roll
     float gy = -g[2];
     float gz = -g[1];
 
