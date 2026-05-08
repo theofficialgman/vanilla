@@ -26,5 +26,5 @@ cp /vanilla/gui/res/switch/config.xml /install/switchroot/vanilla/data/
 # Copy support files
 cp /vanilla/gui/res/switch/bl31.bin /install/switchroot/vanilla/
 cp /vanilla/gui/res/switch/bl33.bin /install/switchroot/vanilla/
-mkimage -A arm64 -T script -d /vanilla/gui/res/switch/boot.txt /install/switchroot/vanilla/boot.scr
+/build/host/bin/mkimage -A arm64 -T script -d /vanilla/gui/res/switch/boot.txt /install/switchroot/vanilla/boot.scr
 cp /vanilla/gui/res/switch/nx-plat.dtimg /install/switchroot/vanilla/
