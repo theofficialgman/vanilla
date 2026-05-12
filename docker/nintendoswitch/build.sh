@@ -18,7 +18,8 @@ cp /vanilla/gui/res/switch/icon_vanilla.bmp /install/switchroot/vanilla/
 cp /vanilla/gui/res/switch/vanilla.ini /install/bootloader/ini/
 
 # Create U-Boot image of kernel
-/build/host/bin/mkimage -A arm64 -O linux -T kernel -C gzip -a 0x80200000 -e 0x80200000 -d /build/images/Image /install/switchroot/vanilla/uImage
+# Image.gz and zImage are both gzip compressed kernel data and are identical. Use Image.gz because buildroot doesn't support zImage on aarch64 for some reason.
+/build/host/bin/mkimage -A arm64 -O linux -T kernel -C gzip -a 0x80200000 -e 0x80200000 -d /build/images/Image.gz /install/switchroot/vanilla/uImage
 
 # Create combined device tree
 
